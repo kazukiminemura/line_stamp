@@ -3,6 +3,9 @@
 - Handles text wrapping for multi-line Japanese phrases and optional drop shadows / outlines
 - Supports custom background colors or images plus optional illustration overlays per sticker
 
+<img width="370" height="320" alt="sugee_main" src="https://github.com/user-attachments/assets/d7b72cd6-1a2a-45c5-b67d-1b421f57bdd3" />
+
+
 ## Quick Start
 - Requires Python 3.10+ and Pillow (install via `pip install -r requirements.txt`)
 - Copy `examples/sample_config.json`, update texts / colors / optional image paths
