@@ -3,11 +3,11 @@ from __future__ import annotations
 import math
 import unicodedata
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-from .config import GenerationConfig, StickerSpec
+from .config import GenerationConfig, IllustrationSpec, StickerSpec
 
 DEFAULT_FONT_CANDIDATES: Sequence[Path] = (
     Path("C:/Windows/Fonts/YuGothR.ttc"),
@@ -83,7 +83,8 @@ class StickerGenerator:
 
         available_width = width - spec.padding * 2
         available_height = height - spec.padding * 2
-        image_reserved_height = int(available_height * spec.image_area_ratio) if spec.image_path else 0
+        has_art = bool(spec.image_path or (spec.illustration and spec.illustration.enabled))
+        image_reserved_height = int(available_height * spec.image_area_ratio) if has_art else 0
         text_box_height = max(available_height - image_reserved_height, int(available_height * 0.35))
         font, lines, line_height, line_gap = self._layout_text(
             spec.text,
@@ -110,14 +111,16 @@ class StickerGenerator:
         )
 
         text_bottom = text_top + text_block_height
-        if spec.image_path:
+        art_image = self._obtain_art_image(spec)
+        if art_image is not None:
             self._composite_art(
                 background,
-                spec,
+                art_image,
                 available_width,
                 height,
                 spec.padding,
                 text_bottom,
+                spec.image_bottom_margin,
             )
 
         return background
@@ -137,24 +140,23 @@ class StickerGenerator:
     def _composite_art(
         self,
         canvas: Image.Image,
-        spec: StickerSpec,
+        art_image: Image.Image,
         text_width: int,
         full_height: int,
         padding: int,
         text_bottom: int,
+        bottom_margin: int,
     ) -> None:
-        path = self._resolve_path(spec.image_path)
-        with Image.open(path) as art:
-            art_rgba = art.convert("RGBA")
+        art_rgba = art_image
         max_width = text_width
-        max_height = max(0, full_height - text_bottom - padding - spec.image_bottom_margin)
+        max_height = max(0, full_height - text_bottom - padding - bottom_margin)
         if max_height <= 0:
             return
 
         art_rgba.thumbnail((max_width, max_height), Image.LANCZOS)
         horizontal_margin = (text_width - art_rgba.width) // 2
         x_pos = padding + max(0, horizontal_margin)
-        y_pos = full_height - padding - spec.image_bottom_margin - art_rgba.height
+        y_pos = full_height - padding - bottom_margin - art_rgba.height
         canvas.alpha_composite(art_rgba, dest=(x_pos, y_pos))
 
     def _draw_text_block(
@@ -356,3 +358,191 @@ class StickerGenerator:
         except (AttributeError, TypeError):
             bbox = self._measure_draw.textbbox((0, 0), "Ag", font=font)
             return bbox[3] - bbox[1]
+    def _obtain_art_image(self, spec: StickerSpec) -> Optional[Image.Image]:
+        if spec.image_path:
+            path = self._resolve_path(spec.image_path)
+            with Image.open(path) as art:
+                return art.convert("RGBA")
+        if spec.illustration and spec.illustration.enabled:
+            return self._render_illustration(spec.illustration)
+        return None
+
+    def _render_illustration(self, illustration: IllustrationSpec) -> Image.Image:
+        base_size = int(min(self.config.base_size) * 0.55)
+        base_size = max(base_size, 200)
+        if illustration.style.lower() == "cat":
+            return self._draw_cat_blob(illustration, base_size)
+        return self._draw_blob(illustration, base_size)
+
+    def _draw_blob(self, illustration: IllustrationSpec, size: int) -> Image.Image:
+        image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(image)
+        blob_bbox = (
+            int(size * 0.08),
+            int(size * 0.15),
+            int(size * 0.92),
+            int(size * 0.95),
+        )
+        outline_width = max(4, size // 35)
+        draw.ellipse(blob_bbox, fill=_parse_color(illustration.face_color), outline=_parse_color(illustration.outline_color), width=outline_width)
+        self._draw_face(draw, illustration, size, blob_bbox, outline_width)
+        return image
+
+    def _draw_cat_blob(self, illustration: IllustrationSpec, size: int) -> Image.Image:
+        image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(image)
+        ear_height = int(size * 0.22)
+        ear_width = int(size * 0.22)
+        center_x = size // 2
+        left_ear = [
+            (center_x - ear_width, int(size * 0.25)),
+            (center_x - ear_width * 2, int(size * 0.05)),
+            (center_x - int(ear_width * 0.3), int(size * 0.05)),
+        ]
+        right_ear = [
+            (center_x + ear_width, int(size * 0.25)),
+            (center_x + ear_width * 2, int(size * 0.05)),
+            (center_x + int(ear_width * 0.3), int(size * 0.05)),
+        ]
+        fill_color = _parse_color(illustration.face_color)
+        outline_color = _parse_color(illustration.outline_color)
+        outline_width = max(4, size // 35)
+        draw.polygon(left_ear, fill=fill_color, outline=outline_color)
+        draw.polygon(right_ear, fill=fill_color, outline=outline_color)
+        blob_bbox = (
+            int(size * 0.1),
+            int(size * 0.2),
+            int(size * 0.9),
+            int(size * 0.95),
+        )
+        draw.ellipse(blob_bbox, fill=fill_color, outline=outline_color, width=outline_width)
+
+        if illustration.accent_color:
+            inner_color = _parse_color(illustration.accent_color)
+            inner_left = [
+                (center_x - ear_width + outline_width, int(size * 0.23)),
+                (center_x - ear_width * 1.7, int(size * 0.09)),
+                (center_x - int(ear_width * 0.5), int(size * 0.08)),
+            ]
+            inner_right = [
+                (center_x + ear_width - outline_width, int(size * 0.23)),
+                (center_x + ear_width * 1.7, int(size * 0.09)),
+                (center_x + int(ear_width * 0.5), int(size * 0.08)),
+            ]
+            draw.polygon(inner_left, fill=inner_color)
+            draw.polygon(inner_right, fill=inner_color)
+
+        self._draw_face(draw, illustration, size, blob_bbox, outline_width)
+        return image
+
+    def _draw_face(
+        self,
+        draw: ImageDraw.ImageDraw,
+        illustration: IllustrationSpec,
+        size: int,
+        blob_bbox: Tuple[int, int, int, int],
+        outline_width: int,
+    ) -> None:
+        outline = _parse_color(illustration.outline_color)
+        accent = _parse_color(illustration.accent_color) if illustration.accent_color else outline
+        eye_diameter = max(8, size // 9)
+        eye_spacing = size // 5
+        eye_y = int(size * 0.45)
+        left_eye_center = (size // 2 - eye_spacing, eye_y)
+        right_eye_center = (size // 2 + eye_spacing, eye_y)
+        expression = illustration.expression.lower()
+
+        def draw_eye(center: Tuple[int, int], closed: bool = False) -> None:
+            x, y = center
+            half = eye_diameter // 2
+            if closed:
+                draw.line(
+                    (x - half, y, x + half, y + outline_width // 2),
+                    fill=outline,
+                    width=max(2, outline_width),
+                )
+            else:
+                draw.ellipse(
+                    (x - half, y - half, x + half, y + half),
+                    fill=accent,
+                )
+
+        if expression == "wink":
+            draw_eye(left_eye_center)
+            draw_eye(right_eye_center, closed=True)
+        elif expression == "angry":
+            brow_offset = size // 12
+            draw.line(
+                (left_eye_center[0] - eye_diameter, eye_y - brow_offset, left_eye_center[0] + eye_diameter, eye_y - brow_offset // 2),
+                fill=outline,
+                width=max(2, outline_width),
+            )
+            draw.line(
+                (right_eye_center[0] - eye_diameter, eye_y - brow_offset // 2, right_eye_center[0] + eye_diameter, eye_y - brow_offset),
+                fill=outline,
+                width=max(2, outline_width),
+            )
+            draw_eye(left_eye_center)
+            draw_eye(right_eye_center)
+        elif expression == "happy":
+            sparkle = max(3, eye_diameter // 4)
+            draw_eye(left_eye_center)
+            draw_eye(right_eye_center)
+            draw.ellipse(
+                (
+                    left_eye_center[0] - sparkle,
+                    left_eye_center[1] - sparkle,
+                    left_eye_center[0] + sparkle,
+                    left_eye_center[1] + sparkle,
+                ),
+                fill=_parse_color("#FFFFFF"),
+            )
+            draw.ellipse(
+                (
+                    right_eye_center[0] - sparkle,
+                    right_eye_center[1] - sparkle,
+                    right_eye_center[0] + sparkle,
+                    right_eye_center[1] + sparkle,
+                ),
+                fill=_parse_color("#FFFFFF"),
+            )
+        elif expression == "sleepy":
+            draw_eye(left_eye_center, closed=True)
+            draw_eye(right_eye_center, closed=True)
+        else:
+            draw_eye(left_eye_center)
+            draw_eye(right_eye_center)
+
+        mouth_width = int(size * 0.32)
+        mouth_height = int(size * 0.18)
+        mouth_center_y = int(size * 0.68)
+        mouth_box = (
+            size // 2 - mouth_width,
+            mouth_center_y - mouth_height,
+            size // 2 + mouth_width,
+            mouth_center_y + mouth_height,
+        )
+        mouth_style = {
+            "smile": (200, 340, False),
+            "laugh": (190, 350, True),
+            "wink": (210, 350, True),
+            "happy": (200, 350, True),
+            "angry": (200, 200, False),
+            "sad": (20, 160, False),
+            "sleepy": (200, 200, False),
+        }.get(expression, (200, 340, False))
+
+        start, end, fill_chord = mouth_style
+        if expression == "angry":
+            draw.line(
+                (size // 2 - mouth_width, mouth_center_y, size // 2 + mouth_width, mouth_center_y + outline_width // 2),
+                fill=outline,
+                width=max(3, outline_width),
+            )
+        elif expression == "sad":
+            draw.arc(mouth_box, start=start, end=end, fill=outline, width=max(3, outline_width))
+        else:
+            if fill_chord:
+                draw.chord(mouth_box, start=start, end=end, fill=accent, outline=outline, width=max(3, outline_width))
+            else:
+                draw.arc(mouth_box, start=start, end=end, fill=outline, width=max(3, outline_width))

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -27,6 +27,25 @@ def _as_float(value: Any, default: float, minimum: float = 0.0, maximum: float =
 
 
 @dataclass(slots=True)
+class IllustrationSpec:
+    enabled: bool = False
+    style: str = "blob"
+    face_color: str = "#FFD166"
+    outline_color: str = "#2F2F2F"
+    accent_color: Optional[str] = None
+    expression: str = "smile"
+
+    @classmethod
+    def from_dict(cls, raw: Dict[str, Any]) -> "IllustrationSpec":
+        data = dict(raw)
+        data["enabled"] = bool(data.get("enabled", True))
+        for key in ("style", "face_color", "outline_color", "accent_color", "expression"):
+            if data.get(key) is not None:
+                data[key] = str(data[key])
+        return cls(**data)
+
+
+@dataclass(slots=True)
 class StickerSpec:
     text: str
     slug: Optional[str] = None
@@ -42,6 +61,7 @@ class StickerSpec:
     image_area_ratio: float = 0.45
     image_bottom_margin: int = 40
     background_image: Optional[str] = None
+    illustration: Optional[IllustrationSpec] = None
 
     @classmethod
     def from_dict(cls, raw: Dict[str, Any]) -> "StickerSpec":
@@ -62,6 +82,11 @@ class StickerSpec:
         for key in ("background_color", "text_color", "text_shadow_color", "text_stroke_color"):
             if data.get(key) is not None:
                 data[key] = str(data[key])
+        illustration_raw = data.get("illustration")
+        if illustration_raw:
+            if not isinstance(illustration_raw, dict):
+                raise ValueError("illustration must be a mapping when provided")
+            data["illustration"] = IllustrationSpec.from_dict(illustration_raw)
         return cls(**data)
 
 

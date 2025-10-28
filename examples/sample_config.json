@@ -11,7 +11,12 @@
       "background_color": "#4B9CD3",
       "text_color": "#FFFFFF",
       "text_shadow_color": "#1B1F2ACC",
-      "padding": 120
+      "padding": 120,
+      "illustration": {
+        "style": "blob",
+        "face_color": "#FDCB6E",
+        "expression": "smile"
+      }
     },
     {
       "slug": "arigato",
@@ -19,7 +24,13 @@
       "background_color": "#F7B32B",
       "text_color": "#3A1F04",
       "text_stroke_color": "#FFFFFF",
-      "text_stroke_width": 6
+      "text_stroke_width": 6,
+      "illustration": {
+        "style": "blob",
+        "face_color": "#FFE066",
+        "accent_color": "#FF6B6B",
+        "expression": "happy"
+      }
     },
     {
       "slug": "yoroshiku",
@@ -27,7 +38,13 @@
       "background_color": "#81B29A",
       "text_color": "#0B1E1E",
       "text_shadow_color": "#FFFFFFAA",
-      "text_shadow_offset": [4, 4]
+      "text_shadow_offset": [4, 4],
+      "illustration": {
+        "style": "cat",
+        "face_color": "#F8E1F4",
+        "accent_color": "#FFB4E6",
+        "expression": "wink"
+      }
     },
     {
       "slug": "okdesu",
@@ -35,7 +52,13 @@
       "background_color": "#F2E9E4",
       "text_color": "#4A4E69",
       "text_shadow_color": "#22222255",
-      "padding": 100
+      "padding": 100,
+      "illustration": {
+        "style": "blob",
+        "face_color": "#BDE0FE",
+        "outline_color": "#1D3557",
+        "expression": "sleepy"
+      }
     },
     {
       "slug": "sugee",
@@ -43,7 +66,12 @@
       "background_color": "#C8553D",
       "text_color": "#FFFFFF",
       "text_shadow_color": "#00000066",
-      "text_shadow_offset": [10, 10]
+      "text_shadow_offset": [10, 10],
+      "illustration": {
+        "style": "blob",
+        "face_color": "#FFE0AC",
+        "expression": "laugh"
+      }
     },
     {
       "slug": "gomen",
@@ -59,7 +87,13 @@
       "background_color": "#078080",
       "text_color": "#F8F5F2",
       "padding": 110,
-      "text_shadow_color": "#0F0F0F88"
+      "text_shadow_color": "#0F0F0F88",
+      "illustration": {
+        "style": "cat",
+        "face_color": "#FAF3DD",
+        "accent_color": "#FFCB77",
+        "expression": "angry"
+      }
     },
     {
       "slug": "see-you",
@@ -67,7 +101,12 @@
       "background_color": "#6C2D84",
       "text_color": "#F9F7F7",
       "text_shadow_color": "#00000066",
-      "text_shadow_offset": [6, 6]
+      "text_shadow_offset": [6, 6],
+      "illustration": {
+        "style": "blob",
+        "face_color": "#C3F0CA",
+        "expression": "smile"
+      }
     }
   ]
 }

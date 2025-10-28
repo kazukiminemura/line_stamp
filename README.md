@@ -30,6 +30,9 @@ python generate_stamps.py examples/sample_config.json
   - `padding`: inner margin from edges (pixels at export scale)
   - `line_spacing`: multiplier for spacing between lines (default `1.05`)
   - `image_path`: optional illustration to paste under the text
+  - `illustration`: auto-generated character when you do not have your own PNG; use fields like
+    - `style` (`blob` or `cat`), `face_color`, `outline_color`, optional `accent_color`
+    - `expression`: `smile`, `happy`, `laugh`, `wink`, `angry`, `sad`, or `sleepy`
   - `image_area_ratio`: fraction of vertical space reserved for the illustration (0–0.95)
   - `image_bottom_margin`: extra breathing room beneath the illustration
 
@@ -45,7 +48,13 @@ python generate_stamps.py examples/sample_config.json
       "background_color": "#F7B32B",
       "text_color": "#3A1F04",
       "text_stroke_color": "#FFFFFF",
-      "text_stroke_width": 6
+      "text_stroke_width": 6,
+      "illustration": {
+        "style": "blob",
+        "face_color": "#FFE066",
+        "accent_color": "#FF6B6B",
+        "expression": "happy"
+      }
     }
   ]
 }
