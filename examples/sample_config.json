@@ -1,0 +1,73 @@
+{
+  "output_dir": "output/stamps",
+  "font_size": 220,
+  "set_icon_text": "LINE STAMP",
+  "set_icon_background": "#222831",
+  "set_icon_text_color": "#F2F2F2",
+  "stickers": [
+    {
+      "slug": "otsukaresama",
+      "text": "おつかれさま！",
+      "background_color": "#4B9CD3",
+      "text_color": "#FFFFFF",
+      "text_shadow_color": "#1B1F2ACC",
+      "padding": 120
+    },
+    {
+      "slug": "arigato",
+      "text": "ありがとう〜！",
+      "background_color": "#F7B32B",
+      "text_color": "#3A1F04",
+      "text_stroke_color": "#FFFFFF",
+      "text_stroke_width": 6
+    },
+    {
+      "slug": "yoroshiku",
+      "text": "よろしくね",
+      "background_color": "#81B29A",
+      "text_color": "#0B1E1E",
+      "text_shadow_color": "#FFFFFFAA",
+      "text_shadow_offset": [4, 4]
+    },
+    {
+      "slug": "okdesu",
+      "text": "了解です！",
+      "background_color": "#F2E9E4",
+      "text_color": "#4A4E69",
+      "text_shadow_color": "#22222255",
+      "padding": 100
+    },
+    {
+      "slug": "sugee",
+      "text": "すごい！",
+      "background_color": "#C8553D",
+      "text_color": "#FFFFFF",
+      "text_shadow_color": "#00000066",
+      "text_shadow_offset": [10, 10]
+    },
+    {
+      "slug": "gomen",
+      "text": "ごめんね…",
+      "background_color": "#273043",
+      "text_color": "#F8EDED",
+      "text_shadow_color": "#00000088",
+      "image_area_ratio": 0.35
+    },
+    {
+      "slug": "fight",
+      "text": "がんばれ！",
+      "background_color": "#078080",
+      "text_color": "#F8F5F2",
+      "padding": 110,
+      "text_shadow_color": "#0F0F0F88"
+    },
+    {
+      "slug": "see-you",
+      "text": "またね〜",
+      "background_color": "#6C2D84",
+      "text_color": "#F9F7F7",
+      "text_shadow_color": "#00000066",
+      "text_shadow_offset": [6, 6]
+    }
+  ]
+}
